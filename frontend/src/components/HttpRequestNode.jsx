@@ -41,15 +41,31 @@ function HttpRequestNode({ data }) {
       </div>
 
       {data.executionResult && (
-        <div style={{ 
-          marginTop: '8px', 
-          fontSize: '11px',
-          color: data.executionResult.success ? '#10b981' : '#ef4444'
-        }}>
-          {data.executionResult.success 
-            ? `✓ ${data.executionResult.data.status}` 
-            : `✗ ${data.executionResult.error}`
-          }
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ 
+            fontSize: '11px',
+            color: data.executionResult.success ? '#10b981' : '#ef4444',
+            marginBottom: '4px'
+          }}>
+            {data.executionResult.success 
+              ? `✓ ${data.executionResult.data.status}` 
+              : `✗ ${data.executionResult.error}`
+            }
+          </div>
+          {data.executionResult.success && data.executionResult.data?.data && (
+            <div style={{
+              fontSize: '10px',
+              color: '#64748b',
+              background: '#0f172a',
+              padding: '4px 6px',
+              borderRadius: '3px',
+              maxHeight: '60px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {JSON.stringify(data.executionResult.data.data).substring(0, 100)}...
+            </div>
+          )}
         </div>
       )}
       

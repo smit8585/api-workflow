@@ -19,6 +19,7 @@ import DelayNode from './components/DelayNode';
 import Sidebar from './components/Sidebar';
 import NodeConfig from './components/NodeConfig';
 import ExecutionPanel from './components/ExecutionPanel';
+import VariablesPanel from './components/VariablesPanel';
 
 const nodeTypes = {
   httpRequest: HttpRequestNode,
@@ -36,6 +37,7 @@ function App() {
   const [workflowId, setWorkflowId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState('config'); // 'config', 'variables', 'results'
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -151,6 +153,9 @@ function App() {
           };
         })
       );
+
+      // Auto-switch to results tab
+      setRightPanelTab('results');
     } catch (error) {
       alert('Error executing workflow: ' + error.message);
     } finally {
@@ -243,29 +248,103 @@ function App() {
         </div>
       </div>
 
-      {/* Right Panel - Node Config or Execution Results */}
+      {/* Right Panel - Tabs: Config / Variables / Results */}
       <div style={{
-        width: '350px',
+        width: '380px',
         background: '#1e293b',
         borderLeft: '1px solid #334155',
-        overflowY: 'auto'
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        {selectedNode ? (
-          <NodeConfig
-            node={selectedNode}
-            onUpdate={updateNodeData}
-            onDelete={deleteNode}
-            nodes={nodes}
-          />
-        ) : executionResults ? (
-          <ExecutionPanel results={executionResults} nodes={nodes} />
-        ) : (
-          <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', marginTop: '40px' }}>
-            <FileJson size={48} style={{ margin: '0 auto 16px' }} />
-            <p>Select a node to configure</p>
-            <p style={{ fontSize: '13px', marginTop: '8px' }}>or execute the workflow to see results</p>
-          </div>
-        )}
+        {/* Tab Header */}
+        <div style={{
+          display: 'flex',
+          borderBottom: '1px solid #334155',
+          background: '#0f172a'
+        }}>
+          <button
+            onClick={() => setRightPanelTab('config')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              background: rightPanelTab === 'config' ? '#1e293b' : 'transparent',
+              border: 'none',
+              borderBottom: rightPanelTab === 'config' ? '2px solid #3b82f6' : '2px solid transparent',
+              color: rightPanelTab === 'config' ? '#e2e8f0' : '#64748b',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            ⚙️ Config
+          </button>
+          <button
+            onClick={() => setRightPanelTab('variables')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              background: rightPanelTab === 'variables' ? '#1e293b' : 'transparent',
+              border: 'none',
+              borderBottom: rightPanelTab === 'variables' ? '2px solid #3b82f6' : '2px solid transparent',
+              color: rightPanelTab === 'variables' ? '#e2e8f0' : '#64748b',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            🔗 Variables
+          </button>
+          <button
+            onClick={() => setRightPanelTab('results')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              background: rightPanelTab === 'results' ? '#1e293b' : 'transparent',
+              border: 'none',
+              borderBottom: rightPanelTab === 'results' ? '2px solid #3b82f6' : '2px solid transparent',
+              color: rightPanelTab === 'results' ? '#e2e8f0' : '#64748b',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            📊 Results
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {rightPanelTab === 'config' && (
+            selectedNode ? (
+              <NodeConfig
+                node={selectedNode}
+                onUpdate={updateNodeData}
+                onDelete={deleteNode}
+                nodes={nodes}
+              />
+            ) : (
+              <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', marginTop: '40px' }}>
+                <FileJson size={48} style={{ margin: '0 auto 16px' }} />
+                <p>Select a node to configure</p>
+              </div>
+            )
+          )}
+
+          {rightPanelTab === 'variables' && (
+            <VariablesPanel nodes={nodes} selectedNodeId={selectedNode?.id} />
+          )}
+
+          {rightPanelTab === 'results' && (
+            executionResults ? (
+              <ExecutionPanel results={executionResults} nodes={nodes} />
+            ) : (
+              <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', marginTop: '40px' }}>
+                <FileJson size={48} style={{ margin: '0 auto 16px' }} />
+                <p>Execute the workflow to see results</p>
+              </div>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

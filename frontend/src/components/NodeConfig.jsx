@@ -3,11 +3,16 @@ import { X, Trash2 } from 'lucide-react';
 
 function NodeConfig({ node, onUpdate, onDelete, nodes }) {
   const [localData, setLocalData] = useState(node.data);
+  const [showOutput, setShowOutput] = useState(false);
 
   const handleUpdate = (updates) => {
     const newData = { ...localData, ...updates };
     setLocalData(newData);
     onUpdate(node.id, updates);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
   };
 
   const renderConfig = () => {
@@ -98,6 +103,33 @@ function NodeConfig({ node, onUpdate, onDelete, nodes }) {
                     </option>
                   ))}
               </select>
+              
+              {localData.sourceNodeId && (() => {
+                const sourceNode = nodes.find(n => n.id === localData.sourceNodeId);
+                return sourceNode?.data?.executionResult?.success ? (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '8px',
+                    background: '#0f172a',
+                    borderRadius: '4px',
+                    fontSize: '11px'
+                  }}>
+                    <div style={{ color: '#94a3b8', marginBottom: '4px' }}>Available variables:</div>
+                    <div style={{ color: '#3b82f6', fontFamily: 'monospace' }}>
+                      {`{{data.status}}`}<br/>
+                      {`{{data.data}}`}<br/>
+                      {`{{data.data.*}}`}
+                    </div>
+                    <button
+                      className="secondary"
+                      onClick={() => setShowOutput(true)}
+                      style={{ width: '100%', marginTop: '6px', fontSize: '11px', padding: '4px' }}
+                    >
+                      View Full Output
+                    </button>
+                  </div>
+                ) : null;
+              })()}
             </div>
           </>
         );
@@ -142,6 +174,28 @@ function NodeConfig({ node, onUpdate, onDelete, nodes }) {
                     </option>
                   ))}
               </select>
+              
+              {localData.sourceNodeId && (() => {
+                const sourceNode = nodes.find(n => n.id === localData.sourceNodeId);
+                return sourceNode?.data?.executionResult?.success ? (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '8px',
+                    background: '#0f172a',
+                    borderRadius: '4px',
+                    fontSize: '11px'
+                  }}>
+                    <div style={{ color: '#94a3b8', marginBottom: '4px' }}>📊 Source output available</div>
+                    <button
+                      className="secondary"
+                      onClick={() => setShowOutput(true)}
+                      style={{ width: '100%', fontSize: '11px', padding: '4px' }}
+                    >
+                      View Source Data
+                    </button>
+                  </div>
+                ) : null;
+              })()}
             </div>
           </>
         );
@@ -173,6 +227,28 @@ function NodeConfig({ node, onUpdate, onDelete, nodes }) {
                     </option>
                   ))}
               </select>
+              
+              {localData.sourceNodeId && (() => {
+                const sourceNode = nodes.find(n => n.id === localData.sourceNodeId);
+                return sourceNode?.data?.executionResult?.success ? (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '8px',
+                    background: '#0f172a',
+                    borderRadius: '4px',
+                    fontSize: '11px'
+                  }}>
+                    <div style={{ color: '#94a3b8', marginBottom: '4px' }}>📊 Source output available</div>
+                    <button
+                      className="secondary"
+                      onClick={() => setShowOutput(true)}
+                      style={{ width: '100%', fontSize: '11px', padding: '4px' }}
+                    >
+                      View Source Data
+                    </button>
+                  </div>
+                ) : null;
+              })()}
             </div>
 
             <div style={{ marginBottom: '12px' }}>
@@ -294,6 +370,61 @@ function NodeConfig({ node, onUpdate, onDelete, nodes }) {
       }}>
         <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Configure Node</h3>
       </div>
+
+      {/* Output Inspector */}
+      {localData.executionResult && (
+        <div style={{ marginBottom: '20px' }}>
+          <button
+            className="secondary"
+            onClick={() => setShowOutput(!showOutput)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <span>📊 Last Output</span>
+            <span>{showOutput ? '▼' : '▶'}</span>
+          </button>
+          
+          {showOutput && (
+            <div style={{
+              marginTop: '8px',
+              background: '#0f172a',
+              border: '1px solid #334155',
+              borderRadius: '6px',
+              padding: '12px'
+            }}>
+              {localData.executionResult.success ? (
+                <>
+                  <div style={{ fontSize: '12px', color: '#10b981', marginBottom: '8px', fontWeight: '500' }}>
+                    ✓ Success ({localData.executionResult.duration}ms)
+                  </div>
+                  <pre style={{
+                    fontSize: '11px',
+                    color: '#94a3b8',
+                    overflow: 'auto',
+                    maxHeight: '200px',
+                    margin: 0,
+                    fontFamily: 'monospace',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word'
+                  }}>
+                    {JSON.stringify(localData.executionResult.data, null, 2)}
+                  </pre>
+                  <button
+                    className="secondary"
+                    onClick={() => copyToClipboard(JSON.stringify(localData.executionResult.data, null, 2))}
+                    style={{ width: '100%', marginTop: '8px', fontSize: '12px', padding: '6px' }}
+                  >
+                    📋 Copy Output
+                  </button>
+                </>
+              ) : (
+                <div style={{ fontSize: '12px', color: '#ef4444' }}>
+                  ✗ Error: {localData.executionResult.error}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {renderConfig()}
 
